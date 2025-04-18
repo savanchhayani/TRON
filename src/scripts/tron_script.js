@@ -1,82 +1,121 @@
-const player = document.getElementById("player");
-const gameArea = document.getElementById("gameArea");
-const boom = document.getElementById("boom");
+const game = document.getElementById("game");
+const gameOverEl = document.getElementById("gameOver");
+
 const backgroundMusic = document.getElementById("background-music");
+const boom = document.getElementById("boom");
 
-let pos = { x: 100, y: 100 };
-let dir = { x: 1, y: 0 }; // start moving right
+const p1 = {
+  el: document.getElementById("p1"),
+  x: 100,
+  y: 100,
+  dir: { x: 1, y: 0 },
+  keys: {
+    up: "arrowup",
+    down: "arrowdown",
+    left: "arrowleft",
+    right: "arrowright",
+  },
+  class: "p1",
+  name: "Player 1",
+  color: "cyan",
+};
+
+const p2 = {
+  el: document.getElementById("p2"),
+  x: 100,
+  y: 300,
+  dir: { x: 1, y: 0 },
+  keys: {
+    up: "w",
+    down: "s",
+    left: "a",
+    right: "d",
+  },
+  class: "p2",
+  name: "Player 2",
+  color: "rgb(255, 207, 46)",
+};
+
+const players = [p1, p2];
 const speed = 2;
-let isGameOver = false;
+const trails = new Set();
+const bounds = game.getBoundingClientRect();
+let gameRunning = true;
 
-const visited = new Set();
-
-function updatePosition() {
-  if (isGameOver) return;
-
-  pos.x += dir.x * speed;
-  pos.y += dir.y * speed;
-
-  const key = `${pos.x}:${pos.y}`;
-
-  if (
-    pos.x < 0 ||
-    pos.y < 0 ||
-    pos.x > window.innerWidth ||
-    pos.y > window.innerHeight ||
-    visited.has(key)
-  ) {
-    endGame("Boom! You crashed!");
-    return;
-  }
-
-  visited.add(key);
-  setPosition(player, pos.x, pos.y);
-  leaveTrail(pos.x + 3, pos.y + 3); // center trail behind the player
-  requestAnimationFrame(updatePosition);
+function setPosition(player) {
+  player.el.style.left = `${player.x}px`;
+  player.el.style.top = `${player.y}px`;
 }
 
-function leaveTrail(x, y) {
+function movePlayer(player) {
+  player.x += player.dir.x * speed;
+  player.y += player.dir.y * speed;
+}
+
+function getKey(player) {
+  return `${player.x}:${player.y}`;
+}
+
+function drawTrail(player) {
   const dot = document.createElement("div");
-  dot.classList.add("trail");
-  dot.style.left = `${x}px`;
-  dot.style.top = `${y}px`;
-  gameArea.appendChild(dot);
+  dot.className = `trail ${player.class}`;
+  dot.style.left = `${player.x}px`;
+  dot.style.top = `${player.y}px`;
+  game.appendChild(dot);
+  trails.add(getKey(player));
 }
 
-function setPosition(playerEl, x, y) {
-  playerEl.style.left = `${x}px`;
-  playerEl.style.top = `${y}px`;
+function checkCollision(player) {
+  const outOfBounds =
+    player.x < 0 ||
+    player.x > bounds.width ||
+    player.y < 0 ||
+    player.y > bounds.height;
+
+  return trails.has(getKey(player)) || outOfBounds;
 }
 
-function spawnParticles(x, y, count = 20) {
-  for (let i = 0; i < count; i++) {
+function spawnParticles(player) {
+  for (let i = 0; i < 20; i++) {
     const p = document.createElement("div");
     p.className = "particle";
-    p.style.left = `${x}px`;
-    p.style.top = `${y}px`;
+    p.style.left = `${player.x}px`;
+    p.style.top = `${player.y}px`;
+    p.style.backgroundColor = player.color;
 
-    const dx = (Math.random() - 0.5) * 200 + "px";
-    const dy = (Math.random() - 0.5) * 200 + "px";
+    p.style.setProperty("--dx", (Math.random() - 0.5) * 200 + "px");
+    p.style.setProperty("--dy", (Math.random() - 0.5) * 200 + "px");
 
-    p.style.setProperty("--dx", dx);
-    p.style.setProperty("--dy", dy);
-
-    gameArea.appendChild(p);
-
+    game.appendChild(p);
     setTimeout(() => p.remove(), 700);
   }
 }
 
-function endGame(msg) {
-  isGameOver = true;
-  const overlay = document.createElement("div");
-  overlay.className = "game-over";
-  overlay.innerText = msg;
-  gameArea.appendChild(overlay);
+function endGame(who) {
+  gameRunning = false;
+  gameOverEl.style.display = "block";
+  gameOverEl.innerText = `${who} crashed`;
 
-  spawnParticles(pos.x, pos.y);
   boom.currentTime = 0;
   boom.play();
+}
+
+function gameLoop() {
+  if (!gameRunning) return;
+
+  for (let player of players) {
+    movePlayer(player);
+
+    if (checkCollision(player)) {
+      spawnParticles(player);
+      endGame(player.name);
+      return;
+    }
+
+    setPosition(player);
+    drawTrail(player);
+  }
+  requestAnimationFrame(gameLoop);
 }
 
 function playBackgroundMusic() {
@@ -84,25 +123,27 @@ function playBackgroundMusic() {
   backgroundMusic.play();
 }
 
-document.addEventListener("keydown", (e) => {
-  if (isGameOver) return;
+function handleKeyPress(e) {
+  if (!gameRunning) return;
 
-  switch (e.key) {
-    case "ArrowUp":
-      if (dir.y === 0) dir = { x: 0, y: -1 };
-      break;
-    case "ArrowDown":
-      if (dir.y === 0) dir = { x: 0, y: 1 };
-      break;
-    case "ArrowLeft":
-      if (dir.x === 0) dir = { x: -1, y: 0 };
-      break;
-    case "ArrowRight":
-      if (dir.x === 0) dir = { x: 1, y: 0 };
-      break;
+  const key = e.key.toLowerCase();
+
+  for (let player of players) {
+    const { up, down, left, right } = player.keys;
+    if (key === up && player.dir.y === 0) {
+      player.dir = { x: 0, y: -1 };
+    } else if (key === down && player.dir.y === 0) {
+      player.dir = { x: 0, y: 1 };
+    } else if (key === left && player.dir.x === 0) {
+      player.dir = { x: -1, y: 0 };
+    } else if (key === right && player.dir.x === 0) {
+      player.dir = { x: 1, y: 0 };
+    }
   }
-});
+}
 
-playBackgroundMusic();
-setPosition(player, pos.x, pos.y);
-updatePosition(); // start loop
+document.addEventListener("keydown", handleKeyPress);
+
+// playBackgroundMusic();
+players.forEach(setPosition);
+gameLoop(); // start loop

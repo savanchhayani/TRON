@@ -9,17 +9,20 @@
     <link rel="stylesheet" href="src/styles/styles.css" />
   </head>
   <body>
-    <div id="gameArea">
-      <div id="player" class="player"></div>
-      <audio
-        id="boom"
-        src="https://cdn.pixabay.com/audio/2022/03/15/audio_a9b8fa9392.mp3"
-      ></audio>
-      <audio
-        id="background-music"
-        src="src/assets/audio/background-music.mp3"
-      ></audio>
+    <div id="game">
+      <div id="p1" class="player p1"></div>
+      <div id="p2" class="player p2"></div>
+      <div id="gameOver" style="display: none">Game Over</div>
     </div>
+
+    <audio
+      id="boom"
+      src="https://cdn.pixabay.com/audio/2022/03/15/audio_a9b8fa9392.mp3"
+    ></audio>
+    <audio
+      id="background-music"
+      src="src/assets/audio/background-music.mp3"
+    ></audio>
 
     <script
       type="text/javascript"

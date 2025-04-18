@@ -1,3 +1,7 @@
+:root {
+  --player2-color: rgb(255, 207, 46);
+}
+
 html,
 body {
   margin: 0;
@@ -7,14 +11,14 @@ body {
   height: 100%;
 }
 
-#gameArea {
+#game {
   width: 100vw;
   height: 100vh;
   position: relative;
   background: radial-gradient(#050505, #000);
 }
 
-#gameArea::before {
+#game::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -42,22 +46,39 @@ body {
   position: absolute;
   width: 10px;
   height: 10px;
+  border-radius: 50%;
+}
+
+.p1 {
   background-color: cyan;
   box-shadow: 0 0 10px cyan, 0 0 20px cyan;
-  border-radius: 50%;
+}
+
+.p2 {
+  background-color: var(--player2-color);
+  box-shadow: 0 0 10px var(--player2-color);
 }
 
 .trail {
   position: absolute;
   width: 4px;
   height: 4px;
-  background-color: cyan;
   border-radius: 50%;
-  box-shadow: 0 0 5px cyan, 0 0 10px cyan;
-  z-index: 1;
+  opacity: 0.7;
+  z-index: 2;
 }
 
-.game-over {
+.trail.p1 {
+  background-color: cyan;
+  box-shadow: 0 0 5px cyan, 0 0 10px cyan;
+}
+
+.trail.p2 {
+  background-color: var(--player2-color);
+  box-shadow: 0 0 5px var(--player2-color);
+}
+
+#gameOver {
   position: absolute;
   top: 50%;
   left: 50%;
