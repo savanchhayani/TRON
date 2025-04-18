@@ -1,0 +1,91 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: black;
+  overflow: hidden;
+  height: 100%;
+}
+
+#gameArea {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  background: radial-gradient(#050505, #000);
+}
+
+#gameArea::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+      to right,
+      rgba(0, 255, 255, 0.1) 1px,
+      transparent 1px
+    ),
+    linear-gradient(to bottom, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 40px 40px;
+  z-index: 0;
+  animation: gridScroll 8s linear infinite;
+}
+
+@keyframes gridScroll {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 40px 40px;
+  }
+}
+
+.player {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: cyan;
+  box-shadow: 0 0 10px cyan, 0 0 20px cyan;
+  border-radius: 50%;
+}
+
+.trail {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background-color: cyan;
+  border-radius: 50%;
+  box-shadow: 0 0 5px cyan, 0 0 10px cyan;
+  z-index: 1;
+}
+
+.game-over {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 2rem;
+  font-family: monospace;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 20px 40px;
+  border: 2px solid cyan;
+  border-radius: 10px;
+  box-shadow: 0 0 20px cyan;
+  z-index: 10;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background-color: cyan;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: explode 3s ease-out forwards;
+}
+
+@keyframes explode {
+  to {
+    transform: translate(var(--dx), var(--dy)) scale(0.5);
+    opacity: 0;
+  }
+}
