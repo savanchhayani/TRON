@@ -144,6 +144,6 @@ function handleKeyPress(e) {
 
 document.addEventListener("keydown", handleKeyPress);
 
-// playBackgroundMusic();
+playBackgroundMusic();
 players.forEach(setPosition);
 gameLoop(); // start loop
